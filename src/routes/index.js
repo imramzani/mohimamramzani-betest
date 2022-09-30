@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const authModule = require("../modules/auth")
 const medModule = require("../modules/medicines")
+const needAuth = require('../middlewares/authentication')
 
 module.exports = function (app){
 let groupPath = '/auth'
@@ -10,6 +11,7 @@ routerAdmin.post("/register",authModule.registerHandler )
 routerAdmin.post("/login",authModule.loginHandler )
 
 groupPath = '/medicine'
+routerAdmin.use(needAuth)
 routerAdmin.get("/list", medModule.listDrugHandler)
 routerAdmin.post("/add", medModule.addDrugsHandler)
 routerAdmin.post("/edit/:id", medModule.updateHandler)

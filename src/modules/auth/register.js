@@ -13,7 +13,7 @@ const bodyRules = joi.object({
 })
 
 module.exports = async function (req, res) {
-    let body = await bodyValidation(req)
+    let body = await bodyValidation(req, res)
 
     const col = req.mongoDB.db(req.mainDB).collection("users")
     let usedIdNumber = await col.findOne({ identityNumber: body.identityNumber })
@@ -35,15 +35,21 @@ module.exports = async function (req, res) {
         await redis.del('AllUser')
         return res.status(201).json({ code: 201, success: true, data: newUser, msg: 'Register success' })
     } catch (err) {
+        console.log(err)
         return res.status(401).json({ code: 401, success: false, msg: `Can't register user` })
     }
 
 }
-async function bodyValidation(req) {
+async function bodyValidation(req, res) {
     try {
         const res = await bodyRules.validateAsync(req.body, { stripUnknown: true })
         return res
     } catch (error) {
-        return error
+        console.log(error)
+        return res.status(401).json({
+            code: 401,
+            success: false,
+            msg: error.details[0].message
+        })
     }
 }

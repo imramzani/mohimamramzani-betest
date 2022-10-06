@@ -16,7 +16,7 @@ app.use(middlewareDb)
 routes(app)
 
 app.get('/', (req, res) => {
-    res.send('OK get in')
+    res.send('OK hop in')
   })
 
 app.listen(port, ()=> {

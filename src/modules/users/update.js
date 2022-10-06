@@ -32,7 +32,13 @@ module.exports = async function (req, res){
             msg: "Success update data"
         })
     } catch (err) {
-        return res.status(500).json({
+        if(err.code){
+            return res.status(err.code).json({
+                code: err.code,
+                success: err.success,
+                msg: err.msg
+            })
+        } else return res.status(500).json({
             code: 500,
             success: false,
             msg: "Internal server error"
@@ -47,10 +53,10 @@ async function bodyValidation(req, res) {
         return result
     } catch (error) {
         console.log(error)
-        return res.status(401).json({
+        throw {
             code: 401,
             success: false,
             msg: error.details[0].message
-        })
+        }
     }
 }

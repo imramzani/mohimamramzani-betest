@@ -1,24 +1,24 @@
 const express = require('express')
 const app = express()
 const authModule = require("../modules/auth")
-const medModule = require("../modules/medicines")
-const needAuth = require('../middlewares/authentication')
+const authentication = require('../middlewares/authentication')
+const authorization = require('../middlewares/authorization')
+const userModule = require('../modules/users')
 
 module.exports = function (app){
 let groupPath = '/auth'
-const routerAdmin = express.Router()
-routerAdmin.post("/register",authModule.registerHandler )
-routerAdmin.post("/login",authModule.loginHandler )
+const router = express.Router()
+router.post("/register",authModule.registerHandler )
+router.post("/login",authModule.loginHandler )
 
-groupPath = '/medicine'
-routerAdmin.use(needAuth)
-routerAdmin.get("/list", medModule.listDrugHandler)
-routerAdmin.post("/add", medModule.addDrugsHandler)
-routerAdmin.post("/edit/:id", medModule.updateHandler)
-routerAdmin.post("/delete/:id", medModule.deleteHandler)
-routerAdmin.get("/:id", medModule.getOneHandler)
-routerAdmin.post("/:id", medModule.updateHandler)
-app.use(`/admin${groupPath}`, routerAdmin)
+groupPath = '/users'
+
+router.use(authentication)
+router.get("/list", userModule.listHandler)
+router.get("/:id", userModule.getOneHandler)
+router.post("/edit/:id", authorization ,userModule.updateHandler)
+router.post("/delete/:id", authorization ,userModule.deleteHandler)
+app.use(`${groupPath}`, router)
 
 
 }

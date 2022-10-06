@@ -4,26 +4,16 @@ const jwt = require('jsonwebtoken')
 const configs = require('../../service/configs')
 
 const bodyRules = joi.object({
-    phoneNumber: joi.string()
-    // .pattern(/^(\+62|62|0)8[1-9][0-9]{6,9}$/)
-    .required()
-    .error(
-      new Error(
-        'phone number invalid. Should use valid phone number (+628xxx)'
-      )
-    ),
-    password: joi.string()
-    // .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
-    .required(),
+    identityNumber: joi.string().required(),
+    password: joi.string().required(),
 })
 
 module.exports = async function (req, res){
-    const col = req.mongoDB.db(req.mainDB).collection("systemUser")
+    const col = req.mongoDB.db(req.mainDB).collection("users")
     let body = await bodyValidation(req)
-    console.log(body)
 
-    let user = await col.findOne({phoneNumber: body.phoneNumber})
-    if(!user) return res.status(403).json({msg: 'Incorrect phone number/ password'})
+    let user = await col.findOne({identityNumber: body.identityNumber})
+    if(!user) return res.status(403).json({code: 403, success: false ,msg: 'Incorrect IC number/ password'})
 
     try {
         const passCompare = await bcrypt.compare(body.password, user.password)
@@ -31,18 +21,20 @@ module.exports = async function (req, res){
 
         const claims = {
             id : user._id,
-            phoneNumber: user.phoneNumber,
-            gender: user.gender,
-            dateOfBirth: user.dateOfBirth,
-            role: user.role
+            userName: user.userName,
+            accountNumber: user.accountNumber,
+            emailAddress: user.emailAddress,
+            identityNumber: user.identityNumber,
         }
 
         const token = await jwt.sign(claims, configs.jwtSecret, {
             algorithm: 'HS256',
-            expiresIn: configs.jwtTimeOut
+            expiresIn: `${configs.jwtTimeOut}m`
         })
 
         return res.status(200).json({
+            code: 200,
+            success: true,
             token: token,
             msg: 'Login success',
             data: claims
@@ -50,6 +42,8 @@ module.exports = async function (req, res){
         
     } catch (err) {
         return res.status(500).json({
+            code: 500,
+            success: false,
             msg: 'Internal Server Error'
         }) 
     }
@@ -61,7 +55,6 @@ async function bodyValidation(req){
         const res = await bodyRules.validateAsync(req.body, {stripUnknown: true})
         return res
     } catch (err) {
-        console.log(err)
         return err
     }
 }

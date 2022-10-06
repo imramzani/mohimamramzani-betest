@@ -1,64 +1,48 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const joi = require('joi').extend(require('@joi/date'))
-const {v4: uuidv4} = require('uuid')
-
+const joi = require('joi')
+const { v4: uuidv4 } = require('uuid')
+const { iban } = require('@phuocng/fake-numbers')
+const redis = require('../../service/redis')
 
 const bodyRules = joi.object({
-    phoneNumber: joi.string()
-    // .pattern(/^(\+62|62|0)8[1-9][0-9]{6,9}$/)
-    .required()
-    .error(
-      new Error(
-        'phone number invalid. Should use valid phone number (+628xxx)'
-      )
-    ),
-    gender: joi.string().required().allow('Male', 'Female'),
-    dateOfBirth: joi.date().format('YYYY/MM/DD').required(),
-    KTP: joi.string()
-    // .pattern(/^\\d{6}([04][1-9]|[1256][0-9]|[37][01])(0[1-9]|1[0-2])\d{2}\d{4}$/)
-    .required()
-    .error(new Error('Must use Indonesian KTP number')),
-    password: joi.string()
-    // .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
-    .required(),
-    role: joi.string().required().allow("Customer", "Admin")
+    userName: joi.string().required(),
+    password: joi.string().required(),
+    emailAddress: joi.string().required(),
+    identityNumber: joi.string().required()
 })
 
-module.exports = async function (req,res){
+module.exports = async function (req, res) {
     let body = await bodyValidation(req)
-    console.log(body)
 
-    const col = req.mongoDB.db(req.mainDB).collection("systemUser")
-    let usedPhoneNumber = await col.findOne({phoneNumber: body.phoneNumber})
-    console.log(usedPhoneNumber)
-    if(usedPhoneNumber) return res.status(401).json({msg: `Phone Number has been used`})
+    const col = req.mongoDB.db(req.mainDB).collection("users")
+    let usedIdNumber = await col.findOne({ identityNumber: body.identityNumber })
+    if (usedIdNumber) return res.status(401).json({ code: 401, success: false, msg: `ID Number already been used` })
 
     let objToInsert = {
-        _id : uuidv4(),
-        phoneNumber: body.phoneNumber,
-        gender: body.gender,
-        dateOfBirth: body.dateOfBirth,
-        KTP: body.KTP,
+        _id: uuidv4(),
+        userName: body.userName,
+        accountNumber: iban.fake(),
+        emailAddress: body.emailAddress,
         password: bcrypt.hashSync(body.password, bcrypt.genSaltSync(10)),
-        role: body.role,
+        identityNumber: body.identityNumber,
         createdAt: Date.now(),
         updatedAt: Date.now(),
     }
     try {
         let newUser = await col.insertOne(objToInsert)
-        newUser = await col.findOne({phoneNumber: body.phoneNumber})
-        return res.status(201).json({newUser, msg: 'Register success' }) 
+        newUser = await col.findOne({ identityNumber: body.identityNumber }, { projection: { _id: 1, userName: 1, accountNumber: 1, emailAddress: 1, identityNumber: 1, createdAt: 1 } })
+        await redis.del('AllUser')
+        return res.status(201).json({ code: 201, success: true, data: newUser, msg: 'Register success' })
     } catch (err) {
-        console.log(err)
-        return res.status(404).json({msg: `Can't register user`})
+        return res.status(401).json({ code: 401, success: false, msg: `Can't register user` })
     }
 
 }
-async function bodyValidation (req){
+async function bodyValidation(req) {
     try {
-        const res = await bodyRules.validateAsync(req.body, {stripUnknown: true})
-        return res 
+        const res = await bodyRules.validateAsync(req.body, { stripUnknown: true })
+        return res
     } catch (error) {
         return error
     }

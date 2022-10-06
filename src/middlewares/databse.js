@@ -8,16 +8,15 @@ module.exports = async function (req, res, next) {
   req.middlewareDB = true
 
   req.mainDB = configs.atlasDB.db
-//   console.log(req.mainDB, "maindbbbbbb")
 
   try {
     req.mongoDB = await mongoConnect()
     console.log('db connected')
     if (!req.mongoDB) {
-      return res.status(401).json({message: 'db connection error'})
+      return res.status(401).json({ code: 401, message: 'db connection error' })
     }
   } catch (err) {
-    return res.status(500).json({message: String(err)})
+    return res.status(500).json({ code: 500, message: String(err) })
   }
 
   return next()

@@ -16,7 +16,12 @@ function getConfig(){
         port: process.env.PORT,
         jwtSecret: process.env.JWT_SECRET,
         jwtTimeOut: process.env.JWT_TIMEOUT,
-        
+        redis:{
+          REDIS_HOST: process.env.REDIS_HOST,
+          REDIS_PORT: process.env.REDIS_PORT,
+          REDIS_PASS: process.env.REDIS_PASS,
+          REDIS_USER: process.env.REDIS_USER
+        }
     }
     return configs
 }

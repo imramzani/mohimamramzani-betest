@@ -1,5 +1,5 @@
 {
-  "name": "pharmacy-order",
+  "name": "ms-moh-imam-ramzani-betest",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,11 +11,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@joi/date": "^2.1.0",
+    "@phuocng/fake-numbers": "^1.4.2",
     "bcrypt": "^5.0.1",
     "dotenv": "^16.0.2",
     "express": "^4.18.1",
     "expressjs": "^1.0.1",
+    "ioredis": "^5.2.3",
     "joi": "^17.6.1",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.10.0",

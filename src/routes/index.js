@@ -15,7 +15,8 @@ groupPath = '/users'
 
 router.use(authentication)
 router.get("/list", userModule.listHandler)
-router.get("/:id", userModule.getOneHandler)
+router.get("/acc/:accountNumber", userModule.getOneByAccountHandler)
+router.get("/ic/:identityNumber", userModule.getOneByIDNumber)
 router.post("/edit/:id", authorization ,userModule.updateHandler)
 router.post("/delete/:id", authorization ,userModule.deleteHandler)
 app.use(`${groupPath}`, router)

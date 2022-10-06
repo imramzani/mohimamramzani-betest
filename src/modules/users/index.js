@@ -1,6 +1,7 @@
 module.exports = {
     listHandler: require('./list'),
-    getOneHandler: require('./getOne'),
+    getOneByAccountHandler: require('./getOneByAccount'),
+    getOneByIDNumber: require('./getOneByIDNumber'),
     updateHandler: require('./update'),
     deleteHandler: require('./delete')
 }

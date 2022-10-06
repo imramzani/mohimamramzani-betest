@@ -3,7 +3,7 @@ module.exports = async function (req, res){
     const params = req.params
 
     try {
-        const item = await col.findOne({_id: params.id})
+        const item = await col.findOne({identityNumber: params.identityNumber}, { projection: { _id: 1, userName: 1, accountNumber: 1, emailAddress: 1, identityNumber: 1, createdAt: 1 } })
         if (!item) return res.status(401).json({
             code: 401,
             success: false,
